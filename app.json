@@ -11,6 +11,7 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -24,11 +25,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-secure-store",
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#FF0000",
           "android": {
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 76
