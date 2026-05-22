@@ -1,7 +1,7 @@
-import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { consumerApi } from '@/lib/api';
+import { deleteSecureItem, getSecureItem, setSecureItem } from '@/lib/secure-storage';
 import type { ConsumerUser, SocialLoginBody } from '@/types/api';
 
 const TOKEN_KEY = 'isi_plaza_consumer_token';
@@ -29,8 +29,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function hydrate() {
       try {
-        const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
-        const storedUser = await SecureStore.getItemAsync(USER_KEY);
+        const storedToken = await getSecureItem(TOKEN_KEY);
+        const storedUser = await getSecureItem(USER_KEY);
         if (!mounted) return;
 
         if (storedToken) {
@@ -42,11 +42,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const me = await consumerApi.me(storedToken);
             if (mounted) {
               setUser(me);
-              await SecureStore.setItemAsync(USER_KEY, JSON.stringify(me));
+              await setSecureItem(USER_KEY, JSON.stringify(me));
             }
           } catch {
-            await SecureStore.deleteItemAsync(TOKEN_KEY);
-            await SecureStore.deleteItemAsync(USER_KEY);
+            await deleteSecureItem(TOKEN_KEY);
+            await deleteSecureItem(USER_KEY);
             if (mounted) {
               setToken(null);
               setUser(null);
@@ -66,8 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInSocial = useCallback(async (body: SocialLoginBody) => {
     const response = await consumerApi.socialLogin(body);
-    await SecureStore.setItemAsync(TOKEN_KEY, response.token);
-    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(response.user));
+    await setSecureItem(TOKEN_KEY, response.token);
+    await setSecureItem(USER_KEY, JSON.stringify(response.user));
     setToken(response.token);
     setUser(response.user);
   }, []);
@@ -80,8 +80,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // token may already be invalid
       }
     }
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-    await SecureStore.deleteItemAsync(USER_KEY);
+    await deleteSecureItem(TOKEN_KEY);
+    await deleteSecureItem(USER_KEY);
     setToken(null);
     setUser(null);
   }, [token]);
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!token) return;
     const me = await consumerApi.me(token);
     setUser(me);
-    await SecureStore.setItemAsync(USER_KEY, JSON.stringify(me));
+    await setSecureItem(USER_KEY, JSON.stringify(me));
   }, [token]);
 
   const value = useMemo(
