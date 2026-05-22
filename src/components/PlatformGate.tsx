@@ -1,17 +1,24 @@
 import React from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 
+import { IsiPlazaColors } from '@/constants/isi-plaza';
 import { usePlatformAccess } from '@/context/PlatformAccessContext';
 
 /**
- * Pantalla negra a pantalla completa si app_enabled === false en Firestore.
+ * Pantalla negra solo si app_enabled === false. Mientras carga Firestore, splash rojo.
  */
 export function PlatformGate({ children }: { children: React.ReactNode }) {
   const { appEnabled } = usePlatformAccess();
 
-  const blocked = appEnabled === null || appEnabled === false;
+  if (appEnabled === null) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color={IsiPlazaColors.white} />
+      </View>
+    );
+  }
 
-  if (blocked) {
+  if (appEnabled === false) {
     return <View style={styles.overlay} accessibilityLabel="Plataforma no disponible" />;
   }
 
@@ -25,6 +32,12 @@ export function PlatformGate({ children }: { children: React.ReactNode }) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  loading: {
+    flex: 1,
+    backgroundColor: IsiPlazaColors.red,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   overlay: {
     flex: 1,
