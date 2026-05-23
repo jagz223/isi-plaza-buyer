@@ -36,7 +36,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (storedToken) {
           setToken(storedToken);
           if (storedUser) {
-            setUser(JSON.parse(storedUser) as ConsumerUser);
+            try {
+              setUser(JSON.parse(storedUser) as ConsumerUser);
+            } catch {
+              await deleteSecureItem(USER_KEY);
+            }
           }
           try {
             const me = await consumerApi.me(storedToken);
@@ -52,6 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               setUser(null);
             }
           }
+        }
+      } catch {
+        // SecureStore u otro fallo: continuar sin sesión
+        if (mounted) {
+          setToken(null);
+          setUser(null);
         }
       } finally {
         if (mounted) setIsLoading(false);

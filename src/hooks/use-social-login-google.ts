@@ -4,16 +4,10 @@ import { useCallback, useEffect } from 'react';
 import { Alert, Platform } from 'react-native';
 
 import { useAuth } from '@/context/AuthContext';
+import type { GoogleClientIds } from '@/lib/google-client-ids';
 import type { SocialProvider } from '@/types/api';
 
 WebBrowser.maybeCompleteAuthSession();
-
-type GoogleClientIds = {
-  expoClientId?: string;
-  iosClientId?: string;
-  androidClientId?: string;
-  webClientId?: string;
-};
 
 export function useSocialLoginGoogle(clientIds: GoogleClientIds) {
   const { signInSocial } = useAuth();

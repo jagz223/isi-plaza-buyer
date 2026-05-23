@@ -28,6 +28,23 @@ function resolveBaseUrl(): string {
 }
 
 const BASE_URL = resolveBaseUrl();
+const REQUEST_TIMEOUT_MS = 60_000;
+
+async function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('El servidor tardó demasiado en responder. Intenta de nuevo.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 function consumerUrl(path: string): string {
   const normalized = path.startsWith('/') ? path.slice(1) : path;
@@ -73,7 +90,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   let response: Response;
   try {
-    response = await fetch(url, {
+    response = await fetchWithTimeout(url, {
       method: options.method ?? 'GET',
       headers,
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
